@@ -1,13 +1,19 @@
 function _init()
  poke(0x5f2d, 1) -- enable mouse
 
- targetGemCount=100
+ -- game over parameters
+ targetGemCount=30
+ timeLimit=60 --seconds
+
+ -- game vars
+ gameMode=1 -- 1=target gem count,2=timed
  gemCtr=0
  gameOver=false
 
  -- progress bar vars
- progress=0 
+ progressBar=0 
  barLen=126
+ if gameMode==1 then barColor=14 else barColor=11 end
 
  -- sprite coords and size for sspr
  sprX=118
@@ -15,6 +21,8 @@ function _init()
  sprS=10
 
  -- timer vars
+ fLimit=timeLimit*30
+ tFrames=0
  frames=0
  seconds=0
  minutes=0
@@ -54,6 +62,7 @@ function _update()
   return
  end
 
+ tFrames+=1
  frames=((frames+1)%30)
  if frames==0 then
   seconds=((seconds+1)%60)
@@ -61,7 +70,22 @@ function _update()
    minutes+=1
   end
  end
- 
+
+ if gameMode==2 then
+  if tFrames>=fLimit then
+   gameOver=true
+   progressBar=0
+  else
+   prcnt=1-(tFrames/fLimit)
+   if prcnt<0.10 then
+    barColor=8
+   elseif prcnt<0.35 then
+    barColor=9
+   end
+   progressBar=barLen*prcnt
+  end
+ end
+
  pointedGem() -- get row and col of gem
  
  if mb==1 then -- if mouse is clicked/held down
@@ -99,13 +123,18 @@ function _update()
   if seldGs then
    -- if 3 or more gems selected, remove selected them from the grid & ....
    if #seldGs>2 then
-    gemCtr+=#seldGs*5
-    if gemCtr>=targetGemCount then
-     gameOver=true
-     progress=barLen
-    else
-     progress=barLen*(gemCtr/targetGemCount)
+    gemCtr+=#seldGs
+
+    if gameMode==1 then
+     if gemCtr>=targetGemCount then
+      gameOver=true
+      progressBar=barLen
+     else
+      progressBar=barLen*(gemCtr/targetGemCount)
+     end
     end
+
+
     -- remove gems
     for k=1,#seldGs do
      mt[seldGs[k][1]][seldGs[k][2]][iGEMID]=nil
@@ -150,7 +179,13 @@ function _draw()
  dProgBox()
  dProgBar()
  draw_gems()
- if gameOver then draw_time(49,16) end
+ if gameOver then
+  if gameMode==1 then
+   draw_time(49,16)
+  else
+   draw_score(49,16)
+  end
+ end
 
  -- -- mark selected gem/s ###TEMP CODE
  -- if seldGs then
@@ -201,7 +236,7 @@ function dProgBox()
 end
 
 function dProgBar()
- if progress>0 then line(1,1,progress,1,14) end
+ if progressBar>0 then line(1,1,progressBar,1,barColor) end
 end
 
 function draw_time(x,y)
@@ -211,6 +246,11 @@ function draw_time(x,y)
 
  rectfill(x,y,x+32,y+6,0)
  print((h<10 and "0"..h or h)..":"..(m<10 and "0"..m or m)..":"..(s<10 and "0"..s or s),x+1,y+1,7)
+end
+
+function draw_score(x,y)
+ rectfill(x,y,x+32,y+6,0)
+ print(gemCtr,x+13,y+1,7)
 end
 
 -- get col,row of gem that the cursor is pointing at
