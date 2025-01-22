@@ -7,9 +7,9 @@ function _init()
 
   -- grid variables
   offset=10 -- offset of grid's top-left corner
-  gs=9 -- size of 1 grid unit
+  gs=9 -- pixel size of 1 grid unit
+  gridCols=7
   gridRows=5
-  gridCols=5
   mt={} -- grid matrix
 
   -- table to track selected gems
@@ -25,6 +25,8 @@ function _init()
 end
 
 function _update()
+  -- todo: check if there's any 3-match in the grid, otherwise, scramble the grid
+
   -- mouse x, y and button
   mx=stat(32)
   my=stat(33)
@@ -63,48 +65,65 @@ function _update()
       end           
     end
   else
-    -- if seldGs then
-    --   -- if 3 or more gems selected, remove selected them from the grid & ....
-    --   if #seldGs>2 then
-    --     -- remove gems
-    --     -- check columns with nil cells
-    --     -- if column has nil, store remaining gems in table, move those gems to the bottom of grid, then generate new gems to fill the column again
-    --   else
-    --     -- reset flags in grid matrix and reset selected gems table variable
-    --     for k=1,#seldGs do
-    --       mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
-    --     end
-    --     seldGs=nil
-    --   end
-    -- end
-
-    -- reset flags of gems on the grid
     if seldGs then
-      for k=1,#seldGs do
-        mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
+      -- if 3 or more gems selected, remove selected them from the grid & ....
+      if #seldGs>2 then
+        -- remove gems
+        -- todo: code for score
+        for k=1,#seldGs do
+          mt[seldGs[k][1]][seldGs[k][2]][iGEMID]=nil
+        end
+
+        -- drop floating gems and refill the grid with gems
+        for i=1,gridCols do
+          for j=1,gridRows do
+            -- check if column has an empty cell
+            if mt[i][j][iGEMID]==nil then
+              colHldr={}
+              for k=1,gridRows do
+                -- copy remaining gems
+                if mt[i][k][iGEMID] then colHldr[#colHldr+1]=mt[i][k] end
+              end
+
+              for k=1,gridRows do
+                if #colHldr>0 then
+                  mt[i][gridRows-k+1]=colHldr[#colHldr] -- old gem/s
+                  colHldr[#colHldr]=nil
+                else
+                  mt[i][gridRows-k+1]={flr(rnd(4))+1,false} -- new gem/s
+                end
+              end
+
+              break
+            end
+          end
+        end
+      else
+        -- reset flags in grid matrix and reset selected gems table variable
+        for k=1,#seldGs do
+          mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
+        end
       end
       seldGs=nil
     end
-  end
 
+    -- -- reset flags of gems on the grid
+    -- if seldGs then
+    --   for k=1,#seldGs do
+    --     mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
+    --   end
+    --   seldGs=nil
+    -- end
+
+
+  end
 end
 
 function _draw()
 	cls()
 	draw_gems()
   
-  -- -- mark clicked gem
-  -- if cGemR and cGemC then
-  --   -- gemCenterX=(cGemC*9+offset)-6
-  --   -- gemCenterY=(cGemR*9+offset)-6
-  --   -- rectfill(gemCenterX,gemCenterY,gemCenterX+1,gemCenterY+1,14)
-
-  --   gemx=((cGemC-1)*9+offset)+3
-  --   gemy=((cGemR-1)*9+offset)+1
-  --   print('1',gemx,gemy,14)    
-  -- end
-  
-  -- mark selected gem/s
+  -- mark selected gem/s ###TEMP CODE
   if seldGs then
     for k=1,#seldGs do
       gemx=((seldGs[k][1]-1)*9+offset)+3
@@ -112,11 +131,8 @@ function _draw()
       print(k,gemx,gemy,14)
     end
   end
-
-  print(gemCol..','..gemRow,0,0,6)
-  -- print(mx..','..my,0,0) -- mouse coords
-  drCsr()
   
+  drCsr()
 end
 
 function draw_gems()
