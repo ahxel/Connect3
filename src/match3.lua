@@ -13,7 +13,7 @@ function _init()
   mt={} -- grid matrix
 
   -- table to track selected gems
-  selectedGems=nil
+  seldGs=nil
 
   -- initialize grid matrix
   for i=1,gridRows do
@@ -44,17 +44,42 @@ function _update()
       -- check if gem is already selected
       if not mt[gemRow][gemCol][iSLCTD] then
         -- add to table of selected gems
-        if selectedGems==nil then
-          selectedGems={{gemRow,gemCol}}
+        if seldGs==nil then
+          seldGs={{gemRow,gemCol}}
+          -- flip flag
+          mt[gemRow][gemCol][iSLCTD]=true
         else
-          selectedGems[#selectedGems+1]={gemRow,gemCol}
-        end
-        -- flip flag
-        mt[gemRow][gemCol][iSLCTD]=true
+          firstGID=mt[seldGs[1][1]][seldGs[1][2]][iGEMID] -- gem id/gem color to match
+          -- check if gem is (1)same color and (2)adjacent
+          thisGID=mt[gemRow][gemCol][iGEMID]
+          if firstGID==thisGID then
+            pow1=(gemCol-seldGs[#seldGs][2])*(gemCol-seldGs[#seldGs][2])
+            pow2=(gemRow-seldGs[#seldGs][1])*(gemRow-seldGs[#seldGs][1])
+            gDst=sqrt(pow1+pow2)
+            if gDst==1 then
+              seldGs[#seldGs+1]={gemRow,gemCol}
+              -- flip flag
+              mt[gemRow][gemCol][iSLCTD]=true
+            end
+          end          
+        end        
       end           
     end
   else
-    selectedGems=nil
+    -- todo
+    -- if #seldGs>2 then
+    --   -- todo: remove selected gems from grid & ....
+    -- else
+    --   seldGs=nil
+    -- end
+
+    -- reset flags of gems on the grid
+    if seldGs then
+      for k=1,#seldGs do
+        mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
+      end
+      seldGs=nil
+    end
   end
 
 end
@@ -75,10 +100,10 @@ function _draw()
   -- end
   
   -- mark selected gem/s
-  if selectedGems then
-    for k=1,#selectedGems do
-      gemx=((selectedGems[k][2]-1)*9+offset)+3
-      gemy=((selectedGems[k][1]-1)*9+offset)+1  
+  if seldGs then
+    for k=1,#seldGs do
+      gemx=((seldGs[k][2]-1)*9+offset)+3
+      gemy=((seldGs[k][1]-1)*9+offset)+1  
       print(k,gemx,gemy,14)
     end
   end
