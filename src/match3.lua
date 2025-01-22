@@ -1,15 +1,33 @@
 function _init()
  poke(0x5f2d, 1) -- enable mouse
 
+ targetGemCount=100
+ gemCtr=0
+ gameOver=false
+
+ -- progress bar vars
+ progress=0 
+ barLen=126
+
+ -- sprite coords and size for sspr
+ sprX=118
+ sprY=22
+ sprS=10
+
+ -- timer vars
+ frames=0
+ seconds=0
+ minutes=0
+
  -- gem data structure indices
  iGEMID=1 -- gem id for gem color
  iSLCTD=2 -- is gem selected flag
 
  -- grid variables
  offset=10 -- offset of grid's top-left corner
- gs=9 -- px size of 1 grid unit
- gridCols=7
- gridRows=5
+ gs=10 -- px size of 1 grid unit
+ gridCols=11
+ gridRows=11
  mt={} -- grid matrix
 
  -- table to track selected gems
@@ -30,9 +48,22 @@ function _update()
  -- mouse x, y and button
  mx=stat(32)
  my=stat(33)
- mb=stat(34) 
- pointedGem() -- get row and col of gem
+ mb=stat(34)
+ 
+ if gameOver then
+  return
+ end
 
+ frames=((frames+1)%30)
+ if frames==0 then
+  seconds=((seconds+1)%60)
+  if seconds==0 then
+   minutes+=1
+  end
+ end
+ 
+ pointedGem() -- get row and col of gem
+ 
  if mb==1 then -- if mouse is clicked/held down
   if gemCol>0 and gemCol<gridCols+1 and gemRow>0 and gemRow<gridRows+1 then
    -- check if gem is already selected
@@ -68,8 +99,14 @@ function _update()
   if seldGs then
    -- if 3 or more gems selected, remove selected them from the grid & ....
    if #seldGs>2 then
+    gemCtr+=#seldGs*5
+    if gemCtr>=targetGemCount then
+     gameOver=true
+     progress=barLen
+    else
+     progress=barLen*(gemCtr/targetGemCount)
+    end
     -- remove gems
-    -- todo: code for score
     for k=1,#seldGs do
      mt[seldGs[k][1]][seldGs[k][2]][iGEMID]=nil
     end
@@ -110,16 +147,28 @@ end
 
 function _draw()
  cls()
+ dProgBox()
+ dProgBar()
  draw_gems()
+ if gameOver then draw_time(49,16) end
 
- -- mark selected gem/s ###TEMP CODE
- if seldGs then
-  for k=1,#seldGs do
-   gemx=((seldGs[k][1]-1)*9+offset)+3
-   gemy=((seldGs[k][2]-1)*9+offset)+1  
-   print(k,gemx,gemy,14)
+ -- -- mark selected gem/s ###TEMP CODE
+ -- if seldGs then
+ --  for k=1,#seldGs do
+ --   gemx=((seldGs[k][1]-1)*9+offset)+3
+ --   gemy=((seldGs[k][2]-1)*9+offset)+1  
+ --   print(k,gemx,gemy,14)
+ --  end
+ -- end
+
+  -- highlight selected gem/s
+  if seldGs then
+   for k=1,#seldGs do
+    gemx=(seldGs[k][1]-1)*gs+offset-1
+    gemy=(seldGs[k][2]-1)*gs+offset-1
+    sspr(sprX,sprY,sprS,sprS,gemx,gemy)
+   end
   end
- end
 
  drawCursor()
 end
@@ -145,6 +194,23 @@ function drawCursor()
  palt(8,true)
  spr(6,mx,my)
  palt()
+end
+
+function dProgBox()
+ rect(0,0,127,2,7)
+end
+
+function dProgBar()
+ if progress>0 then line(1,1,progress,1,14) end
+end
+
+function draw_time(x,y)
+ local s=seconds
+ local m=minutes%60
+ local h=flr(minutes/60)
+
+ rectfill(x,y,x+32,y+6,0)
+ print((h<10 and "0"..h or h)..":"..(m<10 and "0"..m or m)..":"..(s<10 and "0"..s or s),x+1,y+1,7)
 end
 
 -- get col,row of gem that the cursor is pointing at
