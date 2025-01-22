@@ -16,9 +16,9 @@ function _init()
   seldGs=nil
 
   -- initialize grid matrix
-  for i=1,gridRows do
+  for i=1,gridCols do
     mt[i]={}
-    for j=1,gridCols do
+    for j=1,gridRows do
       mt[i][j]={flr(rnd(4))+1,false}
     end
   end
@@ -30,47 +30,52 @@ function _update()
   my=stat(33)
   mb=stat(34) 
   pointedGem() -- get row and col of gem
-  cGemR=nil
-  cGemC=nil
-  if mb==1 then
-    if gemrow>0 and gemrow<gridrows+1 and gemcol>0 and gemcol<gridcols+1 then
-      cgemr=gemrow
-      cgemc=gemcol
-    end
-  end
 
   if mb==1 then -- if mouse is clicked/held down
-    if gemRow>0 and gemRow<gridRows+1 and gemCol>0 and gemCol<gridCols+1 then
+    if gemCol>0 and gemCol<gridCols+1 and gemRow>0 and gemRow<gridRows+1 then
       -- check if gem is already selected
-      if not mt[gemRow][gemCol][iSLCTD] then
+      if not mt[gemCol][gemRow][iSLCTD] then
         -- add to table of selected gems
         if seldGs==nil then
-          seldGs={{gemRow,gemCol}}
+          seldGs={{gemCol,gemRow}}
           -- flip flag
-          mt[gemRow][gemCol][iSLCTD]=true
+          mt[gemCol][gemRow][iSLCTD]=true
         else
           firstGID=mt[seldGs[1][1]][seldGs[1][2]][iGEMID] -- gem id/gem color to match
           -- check if gem is (1)same color and (2)adjacent
-          thisGID=mt[gemRow][gemCol][iGEMID]
+          thisGID=mt[gemCol][gemRow][iGEMID]
           if firstGID==thisGID then
-            pow1=(gemCol-seldGs[#seldGs][2])*(gemCol-seldGs[#seldGs][2])
-            pow2=(gemRow-seldGs[#seldGs][1])*(gemRow-seldGs[#seldGs][1])
+            pow1=(gemCol-seldGs[#seldGs][1])*(gemCol-seldGs[#seldGs][1])
+            pow2=(gemRow-seldGs[#seldGs][2])*(gemRow-seldGs[#seldGs][2])
             gDst=sqrt(pow1+pow2)
             if gDst==1 then
-              seldGs[#seldGs+1]={gemRow,gemCol}
+              seldGs[#seldGs+1]={gemCol,gemRow}
               -- flip flag
-              mt[gemRow][gemCol][iSLCTD]=true
+              mt[gemCol][gemRow][iSLCTD]=true
             end
           end          
-        end        
+        end       
+      else
+        -- todo: code for deselecting a gem
+        -- check if the already selected gem the cursor is pointing at is the 2nd to the last gem in the selGs array
+        -- if yes, deselect the last gem in the selGs array
+        dummyVar=nil
       end           
     end
   else
-    -- todo
-    -- if #seldGs>2 then
-    --   -- todo: remove selected gems from grid & ....
-    -- else
-    --   seldGs=nil
+    -- if seldGs then
+    --   -- if 3 or more gems selected, remove selected them from the grid & ....
+    --   if #seldGs>2 then
+    --     -- remove gems
+    --     -- check columns with nil cells
+    --     -- if column has nil, store remaining gems in table, move those gems to the bottom of grid, then generate new gems to fill the column again
+    --   else
+    --     -- reset flags in grid matrix and reset selected gems table variable
+    --     for k=1,#seldGs do
+    --       mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
+    --     end
+    --     seldGs=nil
+    --   end
     -- end
 
     -- reset flags of gems on the grid
@@ -102,24 +107,24 @@ function _draw()
   -- mark selected gem/s
   if seldGs then
     for k=1,#seldGs do
-      gemx=((seldGs[k][2]-1)*9+offset)+3
-      gemy=((seldGs[k][1]-1)*9+offset)+1  
+      gemx=((seldGs[k][1]-1)*9+offset)+3
+      gemy=((seldGs[k][2]-1)*9+offset)+1  
       print(k,gemx,gemy,14)
     end
   end
 
-  print(gemRow..','..gemCol,0,0,6)
+  print(gemCol..','..gemRow,0,0,6)
   -- print(mx..','..my,0,0) -- mouse coords
   drCsr()
   
 end
 
 function draw_gems()
-  for i=1,gridRows do
-    y=offset+((i-1)*gs)
-    for j=1,gridCols do
+  for i=1,gridCols do
+    x=offset+((i-1)*gs)
+    for j=1,gridRows do
       gemId=mt[i][j][iGEMID]
-      x=offset+((j-1)*gs)
+      y=offset+((j-1)*gs)
       draw_1gem()
     end
   end
