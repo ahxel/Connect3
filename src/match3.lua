@@ -1,21 +1,29 @@
+-- basic connect-3/match-3 game
+
 function _init()
  poke(0x5f2d, 1) -- enable mouse
 
  -- game over parameters
- targetGemCount=30
+ targetGemCount=100
  timeLimit=60 --seconds
 
  -- game vars
- gameMode=1 -- 1=target gem count,2=timed
+ scene=1 -- 1=menu,2=game
+ gameMode=1 -- 1=required gem count,2=timed,3=zen/endless(TBC)
+ numOfModes=2
  gemCtr=0
  gameOver=false
 
  -- progress bar vars
  progressBar=0 
  barLen=126
- if gameMode==1 then barColor=14 else barColor=11 end
 
- -- sprite coords and size for sspr
+ -- menu vars
+ btns={{51,66,73,74,"START"},{37,96,41,102,"LBTN"},{82,96,86,102,"RBTN"}}
+ clickBuffer=0
+ bufferRate=10
+
+ -- sprite coords and size for circle sprite
  sprX=118
  sprY=22
  sprS=10
@@ -57,7 +65,63 @@ function _update()
  mx=stat(32)
  my=stat(33)
  mb=stat(34)
- 
+
+ if scene==1 then menu() else game() end
+end
+
+function _draw()
+ cls()
+ if scene==1 then drawMenu() else drawGame() end
+ drawCursor()
+end
+
+-- main functions
+
+function menu()
+ if clickBuffer>0 then clickBuffer-=1 end
+ pButton=getPointedButton()
+
+ sBtnClr,sBtnSpr,lBtnSpr,rBtnSpr=btnDefaults()
+
+ if pButton=="START" then
+  sBtnClr,sBtnSpr=sBtnHighlight()
+  if mb==1 then
+   if gameMode==1 then barColor=14 else barColor=11 end
+   scene=2
+   return
+  end
+ elseif pButton=="LBTN" then
+  lBtnSpr=13
+  if mb==1 and clickBuffer==0 then
+   clickBuffer=bufferRate
+   gameMode=(gameMode%numOfModes)+1
+  end
+ elseif pButton=="RBTN" then
+  rBtnSpr=14
+  if mb==1 and clickBuffer==0 then
+   clickBuffer=bufferRate
+   gameMode=(gameMode%numOfModes)+1
+  end
+ end
+end
+
+function drawMenu()
+ -- start button
+ rectfill(52,66,72,74,sBtnClr)
+ spr(sBtnSpr,50,67)
+ spr(sBtnSpr+1,73,67)
+ print('START',53,68,7)
+
+ print('GAME MODE',45,88,6)
+ print(gameMode==1 and "NORMAL" or "TIMED",51,97,7)
+ spr(lBtnSpr,37,96)
+ spr(rBtnSpr,83,96)
+
+ tutStr=gameMode==1 and "   (CLEAR 100 GEMS)" or "(PLAY FOR 60 SECONDS)"
+ print(tutStr,20,105,5)
+end
+
+function game()
  if gameOver then
   return
  end
@@ -134,7 +198,6 @@ function _update()
      end
     end
 
-
     -- remove gems
     for k=1,#seldGs do
      mt[seldGs[k][1]][seldGs[k][2]][iGEMID]=nil
@@ -174,8 +237,7 @@ function _update()
  end
 end
 
-function _draw()
- cls()
+function drawGame()
  dProgBox()
  dProgBar()
  draw_gems()
@@ -186,29 +248,27 @@ function _draw()
    draw_score(49,16)
   end
  end
-
- -- -- mark selected gem/s ###TEMP CODE
- -- if seldGs then
- --  for k=1,#seldGs do
- --   gemx=((seldGs[k][1]-1)*9+offset)+3
- --   gemy=((seldGs[k][2]-1)*9+offset)+1  
- --   print(k,gemx,gemy,14)
- --  end
- -- end
-
-  -- highlight selected gem/s
-  if seldGs then
-   for k=1,#seldGs do
-    gemx=(seldGs[k][1]-1)*gs+offset-1
-    gemy=(seldGs[k][2]-1)*gs+offset-1
-    sspr(sprX,sprY,sprS,sprS,gemx,gemy)
-   end
+ 
+ -- highlight selected gem/s
+ if seldGs then
+  for k=1,#seldGs do
+   gemx=(seldGs[k][1]-1)*gs+offset-1
+   gemy=(seldGs[k][2]-1)*gs+offset-1
+   sspr(sprX,sprY,sprS,sprS,gemx,gemy)
   end
-
- drawCursor()
+ end
 end
 
--- user functions
+-- other functions
+function getPointedButton()
+ for i=1,#btns do
+  if mx>btns[i][1] and mx<btns[i][3] and my>btns[i][2] and my<btns[i][4] then
+   return btns[i][5]
+  end
+ end
+ return nil
+end
+
 function draw_gems()
  for i=1,gridCols do
   x=offset+((i-1)*gs)
@@ -259,3 +319,10 @@ function pointedGem()
  gemRow=ceil((my-offset)/gs)
 end
 
+function btnDefaults()
+ return 3,7,11,12
+end
+
+function sBtnHighlight()
+ return 11,9
+end
