@@ -1,4 +1,5 @@
--- basic connect-3/match-3 game
+--a simple connect-3/match-3 game
+--by ahxel
 
 function _init()
  poke(0x5f2d, 1) -- enable mouse
@@ -19,14 +20,19 @@ function _init()
  barLen=126
 
  -- menu vars
- btns={{51,66,73,74,"START"},{37,96,41,102,"LBTN"},{82,96,86,102,"RBTN"}}
+ btns={{51,66,73,74,"START"},{37,96,41,102,"LBTN"},{82,96,86,102,"RBTN"},{119,0,127,8,"I"}}
  clickBuffer=0
  bufferRate=10
 
- -- sprite coords and size for circle sprite
- sprX=118
- sprY=22
- sprS=10
+ -- sprite coords and size for gem sprite
+ gSprX=0
+ gSprY=8
+ gSprS=10
+
+ -- sprite coords and size for highlight sprite
+ sprX=40
+ sprY=8
+ sprS=12
 
  -- timer vars
  fLimit=timeLimit*30
@@ -43,9 +49,9 @@ function _init()
 
  -- grid variables
  offset=10 -- offset of grid's top-left corner
- gs=10 -- px size of 1 grid unit
- gridCols=11
- gridRows=11
+ gs=12 -- px size of 1 grid unit
+ gridCols=9
+ gridRows=9
  mt={} -- grid matrix
 
  -- table to track selected gems
@@ -84,6 +90,7 @@ end
 -- main functions
 
 function menu()
+ showInfo=false 
  if clickBuffer>0 then clickBuffer-=1 end
  pButton=getPointedButton()
 
@@ -108,10 +115,24 @@ function menu()
    clickBuffer=bufferRate
    gameMode=(gameMode%numOfModes)+1
   end
+ elseif pButton=="I" then
+  showInfo=true 
  end
 end
 
 function drawMenu()
+ -- title etc.
+ sspr(0,20,79,27,24,25)
+ sspr(0,47,62,8,1,120)
+ sspr(0,47,62,8,65,120)
+ 
+ if showInfo then
+  sspr(52,8,17,10,0,0)
+  sspr(69,8,46,8,73,0)
+ else 
+  sspr(115,8,9,9,119,0)
+ end
+
  -- start button
  rectfill(52,66,72,74,sBtnClr)
  spr(sBtnSpr,50,67)
@@ -314,7 +335,7 @@ function draw_gems()
 end
 
 function draw_1gem()
- spr(gemId,x,y)
+ sspr(gSprX+((gemId-1)*gSprS),gSprY,gSprS,gSprS,x,y)
 end
 
 function drawCursor()
