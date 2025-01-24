@@ -169,7 +169,7 @@ function game()
 
  pointedGem() -- get row and col of gem
  
- if mb==1 and animT==1 then -- if mouse is clicked/held down (accept input when not animating)
+ if mb==1 and animT==1 then -- if mouse is clicked/held down (accept input only when not animating)
   if gemCol>0 and gemCol<gridCols+1 and gemRow>0 and gemRow<gridRows+1 then
    -- check if gem is already selected
    if not mt[gemCol][gemRow][iSLCTD] then

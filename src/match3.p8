@@ -37,6 +37,8 @@ function _init()
  frames=0
  seconds=0
  minutes=0
+ animrate=0.125
+ animt=1
 
  -- gem data structure indices
  igemid=1 -- gem id for gem color
@@ -56,7 +58,7 @@ function _init()
  for i=1,gridcols do
   mt[i]={}
   for j=1,gridrows do
-   mt[i][j]={flr(rnd(4))+1,false}
+   mt[i][j]=gemc()
   end
  end
 end
@@ -69,7 +71,11 @@ function _update()
  my=stat(33)
  mb=stat(34)
 
- if scene==1 then menu() else game() end
+ if scene==1 then
+  menu()
+ else
+  game()
+ end
 end
 
 function _draw()
@@ -125,6 +131,17 @@ function drawmenu()
 end
 
 function game()
+ if animt<1 then
+  animt+=animrate
+ else
+  -- mark all gems are not to be animated
+  for i=1,gridcols do
+   for j=1,gridrows do
+    mt[i][j][3]=false 
+   end
+  end
+ end
+
  if gameover then
   return
  end
@@ -155,7 +172,7 @@ function game()
 
  pointedgem() -- get row and col of gem
  
- if mb==1 then -- if mouse is clicked/held down
+ if mb==1 and animt==1 then -- if mouse is clicked/held down (accept input only when not animating)
   if gemcol>0 and gemcol<gridcols+1 and gemrow>0 and gemrow<gridrows+1 then
    -- check if gem is already selected
    if not mt[gemcol][gemrow][islctd] then
@@ -210,21 +227,28 @@ function game()
     for i=1,gridcols do
      for j=1,gridrows do
       -- check if column has an empty cell
-      if mt[i][j][igemid]==nil then
+      if mt[i][gridrows-j+1][igemid]==nil then
        colhldr={}
        for k=1,gridrows do
         -- copy remaining gems
-        if mt[i][k][igemid] then colhldr[#colhldr+1]=mt[i][k] end
+        if mt[i][k][igemid] then
+         mt[i][k][3]=true -- mark for animation
+         mt[i][k][4][1]=k -- store origin row
+         colhldr[#colhldr+1]=mt[i][k]
+        end
        end
 
+       -- put old gems in the bottom of the matrix, generate new ones for the top
        for k=1,gridrows do
         if #colhldr>0 then
          mt[i][gridrows-k+1]=colhldr[#colhldr] -- old gem/s
          colhldr[#colhldr]=nil
+         mt[i][gridrows-k+1][4][2]=gridrows-k+1 -- store destination row
         else
-         mt[i][gridrows-k+1]={flr(rnd(4))+1,false} -- new gem/s
+         mt[i][gridrows-k+1]=newgemc(gridrows-k+1) -- new gem/s
         end
        end
+       animt=0
        break
       end
      end
@@ -277,7 +301,16 @@ function draw_gems()
   x=offset+((i-1)*gs)
   for j=1,gridrows do
    gemid=mt[i][j][igemid]
-   y=offset+((j-1)*gs)
+   -- if animt==1 then
+   --  y=offset+((j-1)*gs)
+   -- else
+   --  y=offset+(lerp(mt[i][j][4][1]*gs,mt[i][j][4][2]*gs,animt))
+   -- end 
+   if animt<1 and mt[i][j][3] then
+    y=offset+(lerp((mt[i][j][4][1]-1)*gs,(mt[i][j][4][2]-1)*gs,animt))
+   else
+    y=offset+((j-1)*gs)
+   end
    draw_1gem()
   end
  end
@@ -328,6 +361,20 @@ end
 
 function sbtnhighlight()
  return 11,9
+end
+
+function lerp(a,b,t)
+ return a+(b-a)*t
+end
+
+function gemc()
+ -- (1) color (2) is selected (3) is animate (4) animation data (5) is skip drawing (temp data)
+ return {flr(rnd(4))+1,false,false,{}}
+end
+
+function newgemc(destrow)
+ -- (1) color (2) is selected (3) is animate (4) animation data (5) is skip drawing (temp data)
+ return {flr(rnd(4))+1,false,true,{-2,destrow}}
 end
 __gfx__
 00000000008888000099990000bbbb0000cccc00000000000000088803000000300000000b000000b00000000009000090000000000a0000a000000000000000
