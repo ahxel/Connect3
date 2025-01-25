@@ -90,37 +90,33 @@ end
 -- main functions
 
 function menu()
- showInfo=false 
  if clickBuffer>0 then clickBuffer-=1 end
  pButton=getPointedButton()
-
- sBtnClr,sBtnSpr,lBtnSpr,rBtnSpr=btnDefaults()
-
- if pButton=="START" then
-  sBtnClr,sBtnSpr=sBtnHighlight()
-  if mb==1 then
+ if mb==1 then  
+  if pButton=="START" then
    if gameMode==1 then barColor=14 else barColor=11 end
    scene=2
    return
-  end
- elseif pButton=="LBTN" then
-  lBtnSpr=13
-  if mb==1 and clickBuffer==0 then
+  elseif (pButton=="LBTN" or pButton=="RBTN") and clickBuffer==0 then
    clickBuffer=bufferRate
    gameMode=(gameMode%numOfModes)+1
   end
- elseif pButton=="RBTN" then
-  rBtnSpr=14
-  if mb==1 and clickBuffer==0 then
-   clickBuffer=bufferRate
-   gameMode=(gameMode%numOfModes)+1
-  end
- elseif pButton=="I" then
-  showInfo=true 
  end
 end
 
 function drawMenu()
+ sBtnClr,sBtnSpr,lBtnSpr,rBtnSpr=btnDefaults()
+ showInfo=false
+ if pButton=="START" then
+  sBtnClr,sBtnSpr=sBtnHighlight()
+ elseif pButton=="LBTN" then
+  lBtnSpr=13
+ elseif pButton=="RBTN" then
+  rBtnSpr=14
+ elseif pButton=="I" then
+  showInfo=true 
+ end
+
  -- title etc.
  sspr(0,20,79,27,24,25)
  sspr(0,47,62,8,1,120)
