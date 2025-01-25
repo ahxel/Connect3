@@ -71,7 +71,7 @@ function _init()
 end
 
 function _update()
- -- todo: check if there's any 3-match in the grid, otherwise, scramble the grid
+ -- todo: check if there's any 3-match in the grid. if there's none, scramble the grid.
 
  -- mouse x, y and button
  mx=stat(32)
@@ -226,10 +226,13 @@ function game()
      end          
     end       
    else
-    -- todo: code for deselecting a gem
-    -- check if the already selected gem the cursor is pointing at is the 2nd to the last gem in the selGs array
-    -- if yes, deselect the last gem in the selGs array
-    dummyVar=nil
+    if #seldGs>1 then
+     if gemCol==seldGs[#seldGs-1][1] and gemRow==seldGs[#seldGs-1][2] then
+      -- deselect last gem
+      mt[seldGs[#seldGs][1]][seldGs[#seldGs][2]][iSLCTD]=false
+      seldGs[#seldGs]=nil
+     end
+    end
    end
   end
  else
