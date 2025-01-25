@@ -17,6 +17,7 @@ function _init()
  gameOver=false
 
  -- progress bar vars
+ barColor=11
  progressBar=0 
  barLen=126
 
@@ -98,7 +99,6 @@ function menu()
  if mb==1 then
   if pButton=="START" then
    sfx(00)
-   if gameMode==1 then barColor=14 else barColor=11 end
    scene=2
    timeRef=time()
    return
@@ -315,9 +315,9 @@ function drawGame()
 
  if gameOver then
   if gameMode==1 then
-   draw_time(49,16)
+   draw_time()
   else
-   draw_score(49,16)
+   draw_score()
   end
  end
  
@@ -390,18 +390,26 @@ function dProgBar()
  if progressBar>0 then line(1,1,progressBar,1,barColor) end
 end
 
-function draw_time(x,y)
+function draw_time()
  local s=seconds
  local m=minutes%60
  local h=flr(minutes/60)
+ local x,y,w,ht=36,45,53,35
 
- rectfill(x,y,x+32,y+6,0)
- print((h<10 and "0"..h or h)..":"..(m<10 and "0"..m or m)..":"..(s<10 and "0"..s or s),x+1,y+1,7)
+ rectfill(x,y,x+w,y+ht,0)
+ rect(x+1,y+1,x+w-1,y+ht-1,7)
+ print('FINISHED!',x+10,y+8,7)
+ print((h<10 and "0"..h or h)..":"..(m<10 and "0"..m or m)..":"..(s<10 and "0"..s or s),x+11,y+16,7)
+ print('NORMAL MODE',x+6,y+24,13)
 end
 
-function draw_score(x,y)
- rectfill(x,y,x+32,y+6,0)
- print(gemCtr,x+13,y+1,7)
+function draw_score()
+ local x,y,w,ht=36,45,53,35
+ rectfill(x,y,x+w,y+ht,0)
+ rect(x+1,y+1,x+w-1,y+ht-1,7)
+ print('TIME\'S UP!',x+7,y+8,7)
+ print(gemCtr.." GEMS",x+12,y+16,7)
+ print('TIMED MODE',x+7,y+24,13)
 end
 
 -- get col,row of gem that the cursor is pointing at
