@@ -10,6 +10,7 @@ function _init()
 
  -- game vars
  scene=1 -- 1=menu,2=game
+ gameStarted=false
  gameMode=1 -- 1=required gem count,2=timed,3=zen/endless(TBC)
  numOfModes=2
  gemCtr=0
@@ -42,6 +43,8 @@ function _init()
  minutes=0
  animRate=0.125
  animT=1
+ timeRef=nil
+ dTime=0
 
  -- gem data structure indices
  iGEMID=1 -- gem id for gem color
@@ -97,6 +100,7 @@ function menu()
    sfx(00)
    if gameMode==1 then barColor=14 else barColor=11 end
    scene=2
+   timeRef=time()
    return
   elseif (pButton=="LBTN" or pButton=="RBTN") and clickBuffer==0 then
    sfx(00)
@@ -146,7 +150,14 @@ function drawMenu()
  print(tutStr,20,105,5)
 end
 
+
+
 function game()
+ if not gameStarted then
+  pregame()
+  return
+ end
+
  if animT<1 then
   animT+=animRate
  else
@@ -291,10 +302,17 @@ function game()
  end
 end
 
+function pregame()
+ dTime=time()-timeRef
+ if dTime>=2.75 then gameStarted=true end
+end
+
 function drawGame()
  dProgBox()
  dProgBar()
  draw_gems()
+ if not gameStarted then drawPregame() end
+
  if gameOver then
   if gameMode==1 then
    draw_time(49,16)
@@ -310,6 +328,16 @@ function drawGame()
    gemy=(seldGs[k][2]-1)*gs+offset-1
    sspr(sprX,sprY,sprS,sprS,gemx,gemy)
   end
+ end
+end
+
+function drawPregame()
+ local x,y=50,54
+ rectfill(x,y,x+25,y+8,0)
+ if dTime<=2 then
+  print('READY.',x+2,y+2,7)
+ elseif dTime<2.75 then
+  print('START!',x+2,y+2,7)
  end
 end
 
