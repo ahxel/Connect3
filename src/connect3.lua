@@ -214,8 +214,8 @@ function game()
      -- check if gem is (1)same color and (2)adjacent
      thisGID=mt[gemCol][gemRow][iGEMID]
      if firstGID==thisGID then
-      pow1=(gemCol-seldGs[#seldGs][1])*(gemCol-seldGs[#seldGs][1])
-      pow2=(gemRow-seldGs[#seldGs][2])*(gemRow-seldGs[#seldGs][2])
+      pow1=(gemCol-seldGs[#seldGs][1])^2
+      pow2=(gemRow-seldGs[#seldGs][2])^2
       gDst=sqrt(pow1+pow2)
       if gDst==1 then
        sfx(01)
