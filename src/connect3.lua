@@ -92,12 +92,14 @@ end
 function menu()
  if clickBuffer>0 then clickBuffer-=1 end
  pButton=getPointedButton()
- if mb==1 then  
+ if mb==1 then
   if pButton=="START" then
+   sfx(00)
    if gameMode==1 then barColor=14 else barColor=11 end
    scene=2
    return
   elseif (pButton=="LBTN" or pButton=="RBTN") and clickBuffer==0 then
+   sfx(00)
    clickBuffer=bufferRate
    gameMode=(gameMode%numOfModes)+1
   end
@@ -192,6 +194,7 @@ function game()
    if not mt[gemCol][gemRow][iSLCTD] then
     -- add to table of selected gems
     if seldGs==nil then
+     sfx(01)
      seldGs={{gemCol,gemRow}}
      -- flip flag
      mt[gemCol][gemRow][iSLCTD]=true
@@ -204,6 +207,7 @@ function game()
       pow2=(gemRow-seldGs[#seldGs][2])*(gemRow-seldGs[#seldGs][2])
       gDst=sqrt(pow1+pow2)
       if gDst==1 then
+       sfx(01)
        seldGs[#seldGs+1]={gemCol,gemRow}
        -- flip flag
        mt[gemCol][gemRow][iSLCTD]=true
@@ -232,10 +236,19 @@ function game()
      end
     end
 
-    -- remove gems
+    -- play sfx then remove gems
+    if #seldGs>=11 then
+     sfx(04)
+     sfx(02,-1,0,4)
+    elseif #seldGs>=7 then
+     sfx(02)
+    else
+     sfx(02,-1,0,4)
+    end
     for k=1,#seldGs do
      mt[seldGs[k][1]][seldGs[k][2]][iGEMID]=nil
     end
+
 
     -- drop floating gems and refill the grid with gems
     for i=1,gridCols do
