@@ -118,7 +118,7 @@ function drawMenu()
  end
 
  -- title etc.
- sspr(0,20,79,27,24,25)
+ sspr(0,20,77,27,24,25)
  sspr(0,47,62,8,1,120)
  sspr(0,47,62,8,65,120)
  
