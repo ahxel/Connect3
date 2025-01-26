@@ -1,4 +1,4 @@
---a simple connect-3/match-3 game
+--a simple match-3 game
 --by ahxel
 
 function _init()
