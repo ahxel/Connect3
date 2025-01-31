@@ -355,9 +355,9 @@ function getPointedButton()
 end
 
 function draw_gems()
- for i=1,gridCols do
+ for i=1,gridRows do
   x=offset+((i-1)*gs)
-  for j=1,gridRows do
+  for j=1,gridCols do
    gemId=mt[i][j][iGEMID]
    -- if animT==1 then
    --  y=offset+((j-1)*gs)
@@ -434,11 +434,11 @@ function lerp(A,B,t)
 end
 
 function gemC()
- -- (1) color (2) is selected (3) is animate (4) animation data (5) is skip drawing (temp data)
+ -- (1) color (2) is selected (3) is animate (4) animation data
  return {flr(rnd(4))+1,false,false,{}}
 end
 
 function newGemC(destRow)
- -- (1) color (2) is selected (3) is animate (4) animation data (5) is skip drawing (temp data)
+ -- (1) color (2) is selected (3) is animate (4) animation data
  return {flr(rnd(4))+1,false,true,{-2,destRow}}
 end
