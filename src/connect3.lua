@@ -240,6 +240,7 @@ function game()
    -- if 3 or more gems selected, remove selected them from the grid & ....
    if #seldGs>2 then
     gemCtr+=#seldGs
+    animT=0
 
     if gameMode==1 then
      if gemCtr>=targetGemCount then
@@ -289,7 +290,6 @@ function game()
          mt[i][gridRows-k+1]=newGemC(gridRows-k+1) -- new gem/s
         end
        end
-       animT=0
        break
       end
      end
@@ -355,9 +355,9 @@ function getPointedButton()
 end
 
 function draw_gems()
- for i=1,gridRows do
+ for i=1,gridCols do
   x=offset+((i-1)*gs)
-  for j=1,gridCols do
+  for j=1,gridRows do
    gemId=mt[i][j][iGEMID]
    -- if animT==1 then
    --  y=offset+((j-1)*gs)
