@@ -295,11 +295,12 @@ function game()
      end
     end
    else
-    -- reset flags in grid matrix and reset selected gems table variable
+    -- reset flags in grid matrix
     for k=1,#seldGs do
      mt[seldGs[k][1]][seldGs[k][2]][iSLCTD]=false
     end
    end
+   -- reset selected gems table variable
    seldGs=nil
   end
  end
